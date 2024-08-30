@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .logo {
+            display: block;
+            max-width: 200px;
+            margin: 20px auto;
+        
+        }
+        .navbar {
+            background-color: #333;
+            overflow: hidden;
+        }
+        .navbar a {
+            float: left;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 20px;
+            text-decoration: none;
+        }
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        .container {
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu de navegação -->
+    <div class="navbar">
+        <a href="reservas.html">Reservas</a>
+        <a href="lista.html">Lista de Hotéis</a>
+        <a href="adm.html">Administração</a>
+        <a href="historico.html">Reservas Solicitadas</a>
+    </div>
+
+    <img src="https://dmuller.com.br/wp-content/uploads//2020/05/dmuller.svg" alt="Logo da Empresa" class="logo">
+
+    <!-- Conteúdo principal da página de administração -->
+    <div class="container" id="adminContainer">
+        <h1>Administração</h1>
+
+        <!-- Formulário de autenticação -->
+        <div id="authForm">
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" required>
+            <button onclick="autenticar()">Entrar</button>
+        </div>
+
+        <!-- Formulário para adicionar novo hotel -->
+        <div id="addHotelForm" class="hidden">
+            <form id="adicionarHotelForm">
+                <label for="novoHotelNome">Nome do Novo Hotel:</label>
+                <input type="text" id="novoHotelNome" required>
+
+                <label for="novaCidade">Cidade:</label>
+                <input type="text" id="novaCidade" required>
+
+                <label for="novoHotelEmail">E-mail do Hotel:</label> <!-- Novo campo -->
+                <input type="email" id="novoHotelEmail" required> <!-- Novo campo -->
+
+                <label for="novoEndereco">Endereço:</label> <!-- Novo campo -->
+                <input type="text" id="novoEndereco" required> <!-- Novo campo -->
+
+                <button type="submit">Adicionar Hotel</button>
+            </form>
+        </div>
+
+        <!-- Formulário para remover hotel -->
+        <div id="removeHotelForm" class="hidden">
+            <form id="removerHotelForm">
+                <label for="hotelParaRemover">Hotel para Remover:</label>
+                <select id="hotelParaRemover" required>
+                    <option value="">Selecione um hotel</option>
+                    <!-- Hotéis serão carregados dinamicamente -->
+                </select>
+
+                <button type="submit">Remover Hotel</button>
+            </form>
+        </div>
+
+        <!-- Formulário para alterar senha -->
+        <div id="changePasswordForm" class="hidden">
+            <form id="alterarSenhaForm">
+                <label for="novaSenha">Nova Senha:</label>
+                <input type="password" id="novaSenha" required>
+
+                <button type="submit">Alterar Senha</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var SENHA_ATUAL = localStorage.getItem('senha') || 'Rotciv121397@';
+
+        function autenticar() {
+            var senhaInput = document.getElementById('senha').value;
+            if (senhaInput === SENHA_ATUAL) {
+                document.getElementById('authForm').classList.add('hidden');
+                document.getElementById('addHotelForm').classList.remove('hidden');
+                document.getElementById('removeHotelForm').classList.remove('hidden');
+                document.getElementById('changePasswordForm').classList.remove('hidden');
+                carregarHoteisParaRemover();
+            } else {
+                alert('Senha incorreta!');
+            }
+        }
+
+        document.getElementById('adicionarHotelForm').onsubmit = function(event) {
+            event.preventDefault();
+            var nome = document.getElementById('novoHotelNome').value;
+            var cidade = document.getElementById('novaCidade').value;
+            var email = document.getElementById('novoHotelEmail').value; // Novo campo
+            var endereco = document.getElementById('novoEndereco').value; // Novo campo
+
+            var hoteis = JSON.parse(localStorage.getItem('hoteis')) || [];
+            var id = String(hoteis.length + 1).padStart(2, '0');
+            hoteis.push({ id: id, nome: nome, cidade: cidade, email: email, endereco: endereco }); // Inclui novos campos
+            localStorage.setItem('hoteis', JSON.stringify(hoteis));
+
+            alert('Hotel adicionado com sucesso!');
+            document.getElementById('adicionarHotelForm').reset();
+            carregarHoteisParaRemover();
+        };
+
+        document.getElementById('removerHotelForm').onsubmit = function(event) {
+            event.preventDefault();
+            var nome = document.getElementById('hotelParaRemover').value;
+
+            var hoteis = JSON.parse(localStorage.getItem('hoteis')) || [];
+            hoteis = hoteis.filter(function(hotel) {
+                return hotel.nome !== nome;
+            });
+            localStorage.setItem('hoteis', JSON.stringify(hoteis));
+
+            alert('Hotel removido com sucesso!');
+            document.getElementById('removerHotelForm').reset();
+            carregarHoteisParaRemover();
+        };
+
+        document.getElementById('alterarSenhaForm').onsubmit = function(event) {
+            event.preventDefault();
+            var novaSenha = document.getElementById('novaSenha').value;
+            SENHA_ATUAL = novaSenha;
+            localStorage.setItem('senha', SENHA_ATUAL);
+            alert('Senha alterada com sucesso!');
+            document.getElementById('alterarSenhaForm').reset();
+        };
+
+        function carregarHoteisParaRemover() {
+            var hotelSelect = document.getElementById('hotelParaRemover');
+            hotelSelect.innerHTML = '<option value="">Selecione um hotel</option>';
+
+            var hoteis = JSON.parse(localStorage.getItem('hoteis')) || [];
+            hoteis.forEach(function(hotel) {
+                var option = document.createElement('option');
+                option.value = hotel.nome;
+                option.textContent = hotel.nome;
+                hotelSelect.appendChild(option);
+            });
+        }
+    </script>
+</body>
+</html>

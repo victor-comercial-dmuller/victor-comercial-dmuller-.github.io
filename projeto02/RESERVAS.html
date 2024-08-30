@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .navbar {
+            background-color: #333;
+            overflow: hidden;
+        }
+        .navbar a {
+            float: left;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 20px;
+            text-decoration: none;
+        }
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        .logo {
+            display: block;
+            max-width: 200px;
+            margin: 20px auto;
+        }
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="reservas.html">Reservas</a>
+        <a href="lista.html">Lista de Hotéis</a>
+        <a href="adm.html">Administração</a>
+        <a href="historico.html">Reservas Solicitadas</a>
+    </div>
+    <img src="https://dmuller.com.br/wp-content/uploads/2020/05/dmuller.svg" alt="Logo da Empresa" class="logo">
+    <div class="container">
+        <h1>Reservas</h1>
+        <form id="formReserva">
+            <label for="usuario">Usuário:</label>
+            <input type="text" id="usuario" required>
+
+            <label for="nome">Hospede:</label>
+            <input type="text" id="nome" required>
+
+            <label for="telefone">Telefone:</label>
+            <input type="text" id="telefone" required>
+
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" required>
+
+            <label for="entrada">Data de Entrada:</label>
+            <input type="date" id="entrada" required>
+
+            <label for="saida">Data de Saída:</label>
+            <input type="date" id="saida" required>
+
+            <label for="cidade">Cidade:</label>
+            <select id="cidade" required>
+                <!-- Cidades serão carregadas dinamicamente -->
+            </select>
+
+            <label for="hotel">Hotel:</label>
+            <select id="hotel" required>
+                <!-- Hotéis serão carregados dinamicamente com base na cidade selecionada -->
+            </select>
+
+            <label for="modalidade">Modalidade de Quarto:</label>
+            <select id="modalidade" required>
+                <option value="">Selecione uma modalidade</option>
+                <option value="Standard">Standard</option>
+                <option value="Luxo">Luxo</option>
+                <option value="Executivo">Executivo</option>
+            </select>
+
+            <button type="submit">Reservar</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('formReserva').onsubmit = function(event) {
+            event.preventDefault();
+
+            var reserva = {
+                id: new Date().getTime().toString().padStart(2, '0'),
+                usuario: document.getElementById('usuario').value,
+                nome: document.getElementById('nome').value,
+                telefone: document.getElementById('telefone').value,
+                email: document.getElementById('email').value,
+                entrada: document.getElementById('entrada').value,
+                saida: document.getElementById('saida').value,
+                cidade: document.getElementById('cidade').value,
+                hotel: document.getElementById('hotel').value,
+                modalidade: document.getElementById('modalidade').value
+            };
+
+            var reservas = JSON.parse(localStorage.getItem('reservas')) || [];
+            reservas.push(reserva);
+            localStorage.setItem('reservas', JSON.stringify(reservas));
+
+            alert('Reserva realizada com sucesso! O e-mail será enviado.');
+
+            fetch('http://localhost:5000/send_email', {  // Substitua pela URL do seu servidor Flask
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(reserva)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao enviar e-mail:', error);
+                alert('Falha ao enviar o e-mail.');
+            });
+        };
+
+        function carregarCidades() {
+            var cidadeSelect = document.getElementById('cidade');
+            var hoteis = JSON.parse(localStorage.getItem('hoteis')) || [];
+            var cidades = [...new Set(hoteis.map(hotel => hotel.cidade))];
+
+            cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
+            cidades.forEach(function(cidade) {
+                var option = document.createElement('option');
+                option.value = cidade;
+                option.textContent = cidade;
+                cidadeSelect.appendChild(option);
+            });
+
+            cidadeSelect.onchange = carregarHoteis;
+        }
+
+        function carregarHoteis() {
+            var cidade = document.getElementById('cidade').value;
+            var hotelSelect = document.getElementById('hotel');
+            var hoteis = JSON.parse(localStorage.getItem('hoteis')) || [];
+            var hoteisFiltrados = hoteis.filter(hotel => hotel.cidade === cidade);
+
+            hotelSelect.innerHTML = '<option value="">Selecione um hotel</option>';
+            hoteisFiltrados.forEach(function(hotel) {
+                var option = document.createElement('option');
+                option.value = hotel.nome;
+                option.textContent = hotel.nome;
+                hotelSelect.appendChild(option);
+            });
+        }
+
+        // Chame a função para carregar cidades ao carregar a página
+        window.onload = carregarCidades;
+    </script>
+</body>
+</html>

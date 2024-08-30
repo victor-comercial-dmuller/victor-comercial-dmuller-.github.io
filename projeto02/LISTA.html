@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Hotéis</title>
+    <style>
+        /* Estilo básico para a página */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .navbar {
+            background-color: #333;
+            overflow: hidden;
+        }
+        .navbar a {
+            float: left;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 20px;
+            text-decoration: none;
+        }
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        .container {
+            padding: 20px;
+            max-width: 1000px;
+            margin: auto;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .search-btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        .search-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu de navegação -->
+    <div class="navbar">
+        <a href="reservas.html">Reservas</a>
+        <a href="lista.html">Lista de Hotéis</a>
+        <a href="adm.html">Administração</a>
+        <a href="historico.html">Reservas Solicitadas</a>
+    </div>
+
+    <!-- Conteúdo principal da página de lista de hotéis -->
+    <div class="container">
+        <h1>Lista de Hotéis</h1>
+        <table id="listaHoteis">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome do Hotel</th>
+                    <th>Cidade</th>
+                    <th>E-mail</th>
+                    <th>Endereço</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Hotéis serão carregados dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function carregarHoteis() {
+            var tabela = document.getElementById('listaHoteis').getElementsByTagName('tbody')[0];
+            tabela.innerHTML = '';
+
+            var hoteis = JSON.parse(localStorage.getItem('hoteis')) || [];
+            hoteis.forEach(function(hotel) {
+                var row = tabela.insertRow();
+                var cellID = row.insertCell(0);
+                var cellNome = row.insertCell(1);
+                var cellCidade = row.insertCell(2);
+                var cellEmail = row.insertCell(3);
+                var cellEndereco = row.insertCell(4);
+                var cellActions = row.insertCell(5);
+
+                cellID.textContent = hotel.id;
+                cellNome.textContent = hotel.nome;
+                cellCidade.textContent = hotel.cidade;
+                cellEmail.textContent = hotel.email;
+                cellEndereco.textContent = hotel.endereco;
+
+                // Botão para buscar na web com Nome do Hotel e Cidade
+                var searchBtn = document.createElement('button');
+                searchBtn.className = 'search-btn';
+                searchBtn.textContent = 'BUSCAR NA WEB';
+                searchBtn.onclick = function() {
+                    var query = encodeURIComponent(hotel.nome + ' ' + hotel.cidade);
+                    window.open(`https://www.google.com/search?q=${query}`, '_blank');
+                };
+                cellActions.appendChild(searchBtn);
+            });
+        }
+
+        carregarHoteis();
+    </script>
+</body>
+</html>
